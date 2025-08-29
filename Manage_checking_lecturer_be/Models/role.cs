@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace MongoElearn.Models;
 
-public class role
+public class Role
 {
     [BsonId, BsonRepresentation(BsonType.Int32)]
     public int id { get; set; }

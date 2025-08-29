@@ -32,8 +32,8 @@ public class MongoDbContext
     public IMongoCollection<Project> Project =>
         Database.GetCollection<Project>(_cfg.Collections.Project);
 
-    public IMongoCollection<role> role =>
-        Database.GetCollection<role>(_cfg.Collections.role);
+    public IMongoCollection<Role> role =>
+        Database.GetCollection<Role>(_cfg.Collections.Role);
 
     public IMongoCollection<TimeEntryProject> TimeEntryProject =>
         Database.GetCollection<TimeEntryProject>(_cfg.Collections.TimeEntryProject);

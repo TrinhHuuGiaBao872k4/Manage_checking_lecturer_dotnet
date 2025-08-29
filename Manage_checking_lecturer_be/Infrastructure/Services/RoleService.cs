@@ -6,21 +6,21 @@ namespace MongoElearn.Services;
 
 public class RoleService
 {
-    private readonly IMongoCollection<role> _col;
+    private readonly IMongoCollection<Role> _col;
 
     public RoleService(MongoDbContext ctx)
         => _col = ctx.role;
 
-    public Task<List<role>> GetAllAsync()
+    public Task<List<Role>> GetAllAsync()
         => _col.Find(_ => true).ToListAsync();
 
-    public Task<role?> GetByIdAsync(int id)
+    public Task<Role?> GetByIdAsync(int id)
         => _col.Find(x => x.id == id).FirstOrDefaultAsync();
 
-    public Task CreateAsync(role doc)
+    public Task CreateAsync(Role doc)
         => _col.InsertOneAsync(doc);
 
-    public async Task<bool> UpdateAsync(int id, role update)
+    public async Task<bool> UpdateAsync(int id, Role update)
     {
         update.id = id;
         var result = await _col.ReplaceOneAsync(x => x.id == id, update);
