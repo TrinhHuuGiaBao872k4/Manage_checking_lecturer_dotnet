@@ -1,0 +1,99 @@
+@* MenuManager.razor *@
+<div class="d-flex flex-column flex-shrink-0 p-1 text-white"
+    style="width: 350px; height: 100vh; background-color:#001529">
+    <ul class="nav nav-pills flex-column mb-auto">
+        <!-- Dashboard -->
+        <li class="nav-item mb-1">
+            <NavLink href="/checking-intern" class="nav-linkm d-flex align-items-center" activeClass="active">
+                <i class="bi bi-pie-chart me-2"></i>
+                Dashboard
+            </NavLink>
+        </li>
+
+        <!-- Manager (collapsible) -->
+        <li class="mb-1">
+            <a class="nav-linkm d-flex align-items-center" data-bs-toggle="collapse" href="#managerSubMenu"
+                role="button" aria-expanded="false" aria-controls="managerSubMenu">
+                <i class="bi bi-envelope me-2"></i>
+                Manager
+                <i class="bi bi-chevron-down ms-auto arrow-icon"></i>
+            </a>
+            <div class="collapse ps-2" id="managerSubMenu" style="background-color: #000;">
+                <ul class="nav flex-column pt-3 pb-3">
+                    <li>
+                        <NavLink href="/role" class="nav-linkm" activeClass="active">Role</NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="/employee" class="nav-linkm" activeClass="active">Employee</NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="/project" class="nav-linkm" activeClass="active">Project</NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="/checking" class="nav-linkm" activeClass="active">Checking</NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="/department" class="nav-linkm" activeClass="active">Department</NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="/meetings" class="nav-linkm" activeClass="active">Meetings</NavLink>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Schedule Lecture -->
+        <li class="nav-item mt-2">
+            <NavLink href="/schedule-management" class="nav-linkm d-flex align-items-center" activeClass="active">
+                <i class="bi bi-pie-chart me-2"></i>
+                Schedule Lecture
+            </NavLink>
+        </li>
+    </ul>
+</div>
+
+<style>
+    /* Base nav link */
+    .nav-linkm {
+        color: #8b8f95;
+        border-radius: 8px;
+        padding: 8px 12px;
+        transition: all 0.2s ease-in-out;
+        text-decoration: none;
+    }
+
+    /* Hover effect */
+    .nav-linkm:hover {
+        color: #fff;
+    }
+
+    /* Active highlight */
+    .nav-linkm.active {
+        background-color: #0d6efd !important;
+        color: #fff !important;
+        font-weight: 500;
+        border-radius: 12px;
+    }
+
+    #managerSubMenu ul {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        /* chỉnh khoảng cách theo ý */
+    }
+
+    /* Submenu active margin */
+    #managerSubMenu .nav-linkm.active {
+        margin-left: 4px;
+        margin-right: 4px;
+    }
+
+    /* Arrow rotation */
+    .arrow-icon {
+        transition: transform 0.3s ease;
+    }
+
+    a[aria-expanded="true"] .arrow-icon {
+        transform: rotate(180deg);
+    }
+</style>
