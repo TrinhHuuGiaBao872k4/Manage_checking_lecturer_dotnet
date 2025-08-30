@@ -27,13 +27,13 @@ builder.Services.AddScoped<IRoleRepository>(sp =>
 
 // Services (đăng ký qua interface, dùng Scoped)
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-// builder.Services.AddScoped<IProjectService, ProjectService>();
-// builder.Services.AddScoped<ITimeEntryProjectService, TimeEntryProjectService>();
-// builder.Services.AddScoped<IGiangVienService, GiangVienService>();
-// builder.Services.AddScoped<ILopHocService, LopHocService>();
-// builder.Services.AddScoped<IGiangVienLopHocService, GiangVienLopHocService>();
-// builder.Services.AddScoped<IRoleService, RoleService>();
-
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<ITimeEntryProjectService, TimeEntryProjectService>();
+builder.Services.AddScoped<IGiangVienService, GiangVienService>();
+builder.Services.AddScoped<ILopHocService, LopHocService>();
+builder.Services.AddScoped<IGiangVienLopHocService, GiangVienLopHocService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ISequenceService, SequenceService>();
 // MVC + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

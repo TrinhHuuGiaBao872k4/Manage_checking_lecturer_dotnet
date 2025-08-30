@@ -1,35 +1,73 @@
 using MongoDB.Driver;
 using MongoElearn.Infrastructure;
 using MongoElearn.Models;
-
+using MongoElearn.DTOs.GiangVien;
+using MongoElearn.Infrastructure.Repositories;
+using BCryptNet = BCrypt.Net.BCrypt;
 namespace MongoElearn.Services;
 
-public class GiangVienService
+
+public interface IGiangVienService
 {
-    private readonly IMongoCollection<GiangVien> _col;
+    Task<List<GiangVien>> GetAllAsync();
+    Task<GiangVien?> GetByIdAsync(int id);
+    Task CreateAsync(GiangVienCreateDto dto);
+    Task<bool> UpdateAsync(int id, GiangVienUpdateDto dto);
+    Task<bool> DeleteAsync(int id);
+}
+public class GiangVienService : IGiangVienService
+{
+    private readonly IGiangVienRepository _repo;
+    private readonly ISequenceService _seq;
+    public GiangVienService(IGiangVienRepository repo,ISequenceService seq) => _repo = repo;
 
-    public GiangVienService(MongoDbContext ctx)
-        => _col = ctx.GiangVien;
+    public Task<List<GiangVien>> GetAllAsync() => _repo.GetAllAsync();
+    public Task<GiangVien?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);
 
-    public Task<List<GiangVien>> GetAllAsync()
-        => _col.Find(_ => true).ToListAsync();
-
-    public Task<GiangVien?> GetByIdAsync(int id)
-        => _col.Find(x => x.id == id).FirstOrDefaultAsync();
-
-    public Task CreateAsync(GiangVien doc)
-        => _col.InsertOneAsync(doc);
-
-    public async Task<bool> UpdateAsync(int id, GiangVien update)
+    public async Task CreateAsync(GiangVienCreateDto dto)
     {
-        update.id = id;
-        var result = await _col.ReplaceOneAsync(x => x.id == id, update);
-        return result.MatchedCount > 0;
+        var doc = new GiangVien
+        {
+            Ten = dto.Ten,
+            KiNang = dto.KiNang,
+            ChiNhanh = dto.ChiNhanh,
+            KhungGioDay = dto.KhungGioDay,
+            DayOff = dto.DayOff,
+            Mau = dto.Mau,
+            GhiChu = dto.GhiChu,
+            email = dto.email,
+            account = dto.account,
+            password = string.IsNullOrWhiteSpace(dto.password) ? null : BCryptNet.HashPassword(dto.password),
+            role = dto.role,
+            isActive = dto.isActive ?? true
+        };
+         var next = await _seq.GetNextAsync("GiangVien");   // << tự tăng
+        doc.id = (int)next;
+        await _repo.CreateAsync(doc);
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> UpdateAsync(int id, GiangVienUpdateDto dto)
     {
-        var result = await _col.DeleteOneAsync(x => x.id == id);
-        return result.DeletedCount > 0;
+        var e = await _repo.GetByIdAsync(id);
+        if (e is null) return false;
+
+        e.Ten = dto.Ten ?? e.Ten;
+        e.KiNang = dto.KiNang ?? e.KiNang;
+        e.ChiNhanh = dto.ChiNhanh ?? e.ChiNhanh;
+        e.KhungGioDay = dto.KhungGioDay ?? e.KhungGioDay;
+        e.DayOff = dto.DayOff ?? e.DayOff;
+        e.Mau = dto.Mau ?? e.Mau;
+        e.GhiChu = dto.GhiChu ?? e.GhiChu;
+        e.email = dto.email ?? e.email;
+        e.account = dto.account ?? e.account;
+        if (!string.IsNullOrWhiteSpace(dto.password))
+            e.password = BCryptNet.HashPassword(dto.password);
+        e.role = dto.role ?? e.role;
+        if (dto.isActive.HasValue) e.isActive = dto.isActive.Value;
+
+        return await _repo.ReplaceAsync(Builders<GiangVien>.Filter.Eq(x => x.id, id), e);
     }
+
+    public Task<bool> DeleteAsync(int id)
+        => _repo.DeleteAsync(Builders<GiangVien>.Filter.Eq(x => x.id, id));
 }

@@ -21,7 +21,13 @@ public interface IEmployeeService
 public class EmployeeService : IEmployeeService
 {
     private readonly IEmployeeRepository _repo;
+     private readonly ISequenceService _seq;
+    public EmployeeService(IEmployeeRepository repo, ISequenceService seq)
+    {
+        _repo = repo; _seq = seq;
+    }
     public EmployeeService(IEmployeeRepository repo) => _repo = repo;
+
 
     public Task<List<Employee>> GetAllAsync() => _repo.GetAllAsync();
     public Task<Employee?> GetByIdAsync(string id) => _repo.GetByIdAsync(id);
@@ -47,8 +53,8 @@ public class EmployeeService : IEmployeeService
             isActive = true,
             manager = dto.managerId
         };
-         if (string.IsNullOrWhiteSpace(emp.id))
-        emp.id = ObjectId.GenerateNewId().ToString();
+         var next = await _seq.GetNextAsync("Employee");
+        emp.id = next.ToString();
         await _repo.CreateAsync(emp);
         return emp;
     }

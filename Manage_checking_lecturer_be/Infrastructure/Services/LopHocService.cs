@@ -1,35 +1,68 @@
 using MongoDB.Driver;
 using MongoElearn.Infrastructure;
 using MongoElearn.Models;
+using MongoElearn.DTOs.LopHoc;
+using MongoElearn.Infrastructure.Repositories;
 
 namespace MongoElearn.Services;
-
-public class LopHocService
+public interface ILopHocService
 {
-    private readonly IMongoCollection<LopHoc> _col;
+    Task<List<LopHoc>> GetAllAsync();
+    Task<LopHoc?> GetByIdAsync(int id);
+    Task CreateAsync(LopHocCreateDto dto);
+    Task<bool> UpdateAsync(int id, LopHocUpdateDto dto);
+    Task<bool> DeleteAsync(int id);
+}
 
-    public LopHocService(MongoDbContext ctx)
-        => _col = ctx.LopHoc;
-
-    public Task<List<LopHoc>> GetAllAsync()
-        => _col.Find(_ => true).ToListAsync();
-
-    public Task<LopHoc?> GetByIdAsync(int id)
-        => _col.Find(x => x.LopHoc_Id == id).FirstOrDefaultAsync();
-
-    public Task CreateAsync(LopHoc doc)
-        => _col.InsertOneAsync(doc);
-
-    public async Task<bool> UpdateAsync(int id, LopHoc update)
+public class LopHocService : ILopHocService
+{
+    private readonly ILopHocRepository _repo;
+      private readonly ISequenceService _seq;
+   public LopHocService(ILopHocRepository repo, ISequenceService seq)    
     {
-        update.LopHoc_Id = id;
-        var result = await _col.ReplaceOneAsync(x => x.LopHoc_Id == id, update);
-        return result.MatchedCount > 0;
+        _repo = repo;
+        _seq  = seq;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public Task<List<LopHoc>> GetAllAsync() => _repo.GetAllAsync();
+    public Task<LopHoc?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);
+
+    public async Task CreateAsync(LopHocCreateDto dto)
     {
-        var result = await _col.DeleteOneAsync(x => x.LopHoc_Id == id);
-        return result.DeletedCount > 0;
+        // (tuỳ chọn) validate NgayKetThuc >= NgayBatDau
+        var doc = new LopHoc
+        {
+            TenLopHoc = dto.TenLopHoc,
+            KhoaHoc = dto.KhoaHoc,
+            ThoiKhoaBieu = dto.ThoiKhoaBieu,
+            ChiNhanhLop = dto.ChiNhanhLop,
+            NgayBatDau = dto.NgayBatDau,
+            NgayKetThuc = dto.NgayKetThuc,
+            khungGio = dto.khungGio,
+            isActive = dto.isActive ?? true
+        };
+        var next = await _seq.GetNextAsync("LopHoc");      
+        doc.LopHoc_Id = (int)next;
+        await _repo.CreateAsync(doc);
     }
+
+    public async Task<bool> UpdateAsync(int id, LopHocUpdateDto dto)
+    {
+        var e = await _repo.GetByIdAsync(id);
+        if (e is null) return false;
+
+        e.TenLopHoc = dto.TenLopHoc ?? e.TenLopHoc;
+        e.KhoaHoc = dto.KhoaHoc ?? e.KhoaHoc;
+        e.ThoiKhoaBieu = dto.ThoiKhoaBieu ?? e.ThoiKhoaBieu;
+        e.ChiNhanhLop = dto.ChiNhanhLop ?? e.ChiNhanhLop;
+        e.NgayBatDau = dto.NgayBatDau ?? e.NgayBatDau;
+        e.NgayKetThuc = dto.NgayKetThuc ?? e.NgayKetThuc;
+        e.khungGio = dto.khungGio ?? e.khungGio;
+        if (dto.isActive.HasValue) e.isActive = dto.isActive.Value;
+
+        return await _repo.ReplaceAsync(Builders<LopHoc>.Filter.Eq(x => x.LopHoc_Id, id), e);
+    }
+
+    public Task<bool> DeleteAsync(int id)
+        => _repo.DeleteAsync(Builders<LopHoc>.Filter.Eq(x => x.LopHoc_Id, id));
 }

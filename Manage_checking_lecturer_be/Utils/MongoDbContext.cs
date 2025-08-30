@@ -37,6 +37,8 @@ public class MongoDbContext
 
     public IMongoCollection<TimeEntryProject> TimeEntryProject =>
         Database.GetCollection<TimeEntryProject>(_cfg.Collections.TimeEntryProject);
+    public IMongoCollection<Counter> Counters =>
+Database.GetCollection<Counter>("_counters");
 
     // (tuỳ chọn) tạo index thay thế UNIQUE/FK
     public async Task EnsureIndexesAsync()
@@ -50,7 +52,7 @@ public class MongoDbContext
 
         await Project.Indexes.CreateOneAsync(
             new CreateIndexModel<Project>(Builders<Project>.IndexKeys.Ascending(x => x.code),
-            new CreateIndexOptions{ Unique = true }));
+            new CreateIndexOptions { Unique = true }));
 
         await TimeEntryProject.Indexes.CreateManyAsync(new[]
         {
