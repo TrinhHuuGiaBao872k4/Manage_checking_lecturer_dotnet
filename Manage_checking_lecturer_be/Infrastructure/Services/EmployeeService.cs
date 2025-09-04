@@ -26,7 +26,7 @@ public class EmployeeService : IEmployeeService
     {
         _repo = repo; _seq = seq;
     }
-    public EmployeeService(IEmployeeRepository repo) => _repo = repo;
+    
 
 
     public Task<List<Employee>> GetAllAsync() => _repo.GetAllAsync();

@@ -1,73 +1,73 @@
-// Controllers/EmployeesController.cs
 using Microsoft.AspNetCore.Mvc;
-using MongoElearn.Models;
 using MongoElearn.Services;
-using MongoElearn.DTOs.Employees; // nơi bạn để EmployeeCreateDto/UpdateDto/ViewDto
-using System.Linq;
+using MongoElearn.Models;
+using MongoElearn.DTOs.Employees;
+using MongoElearn.Api.Common;
 
-namespace MongoElearn.Controllers;
+namespace MongoElearn.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class EmployeesController : ControllerBase
+public sealed class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _svc;
     public EmployeesController(IEmployeeService svc) => _svc = svc;
 
-    // map domain -> view dto (ẩn password)
-    private static EmployeeViewDto ToView(Employee e) => new(
-        e.id,
-        e.code,
-        e.email,
-        e.fullname,
-        e.current_school,
-        e.internship_position,
-        e.internship_start_time,
-        e.internship_end_time,
-        e.Skills,                     
-        e.role ?? new List<string>(),
-        e.isActive,
-        e.manager
-    );
-
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<EmployeeViewDto>>> GetAll()
-        => Ok((await _svc.GetAllAsync()).Select(ToView));
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<EmployeeViewDto>> Get(string id)
+    public async Task<ActionResult<HTTPResponseClient<List<Employee>>>> GetAll()
     {
-        var emp = await _svc.GetByIdAsync(id);
-        return emp is null ? NotFound() : Ok(ToView(emp));
+        var list = await _svc.GetAllAsync();
+        return Ok(HTTPResponseClient<List<Employee>>.Ok(list));
     }
 
-    // GET api/employees/search?q=alice&active=true&role=Intern
-    [HttpGet("search")]
-    public async Task<ActionResult<IEnumerable<EmployeeViewDto>>> Search([FromQuery] string? q, [FromQuery] bool? active, [FromQuery] string? role)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<HTTPResponseClient<Employee>>> GetById(string id)
     {
-        var list = await _svc.SearchAsync(q, active, role);
-        return Ok(list.Select(ToView));
+        var e = await _svc.GetByIdAsync(id);
+        return e is null
+            ? NotFound(HTTPResponseClient<Employee>.Fail("Employee not found", 404))
+            : Ok(HTTPResponseClient<Employee>.Ok(e));
+    }
+
+    [HttpGet("by-email")]
+    public async Task<ActionResult<HTTPResponseClient<Employee>>> GetByEmail([FromQuery] string email)
+    {
+        var e = await _svc.GetByEmailAsync(email);
+        return e is null
+            ? NotFound(HTTPResponseClient<Employee>.Fail("Employee not found", 404))
+            : Ok(HTTPResponseClient<Employee>.Ok(e));
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<HTTPResponseClient<List<Employee>>>> Search([FromQuery] string? keyword, [FromQuery] bool? isActive, [FromQuery] string? role)
+    {
+        var list = await _svc.SearchAsync(keyword, isActive, role);
+        return Ok(HTTPResponseClient<List<Employee>>.Ok(list));
     }
 
     [HttpPost]
-    public async Task<ActionResult<EmployeeViewDto>> Create([FromBody] EmployeeCreateDto dto)
+    public async Task<ActionResult<HTTPResponseClient<Employee>>> Create([FromBody] EmployeeCreateDto dto)
     {
-        try
-        {
-            var emp = await _svc.CreateAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = emp.id }, ToView(emp));
-        }
-        catch (InvalidOperationException ex)           // ví dụ duplicate code/email
-        {
-            return Conflict(new { message = ex.Message });
-        }
+        var created = await _svc.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = created.id },
+            HTTPResponseClient<Employee>.Ok(created, "Created", 201));
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(string id, [FromBody] EmployeeUpdateDto dto)
-        => await _svc.UpdateAsync(id, dto) ? NoContent() : NotFound();
+    public async Task<ActionResult<HTTPResponseClient<string>>> Update(string id, [FromBody] EmployeeUpdateDto dto)
+    {
+        var ok = await _svc.UpdateAsync(id, dto);
+        return ok
+            ? Ok(HTTPResponseClient<string>.Ok("Updated"))
+            : NotFound(HTTPResponseClient<string>.Fail("Employee not found", 404));
+    }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(string id)
-        => await _svc.DeleteAsync(id) ? NoContent() : NotFound();
+    public async Task<ActionResult<HTTPResponseClient<string>>> Delete(string id)
+    {
+        var ok = await _svc.DeleteAsync(id);
+        return ok
+            ? Ok(HTTPResponseClient<string>.Ok("Deleted"))
+            : NotFound(HTTPResponseClient<string>.Fail("Employee not found", 404));
+    }
 }

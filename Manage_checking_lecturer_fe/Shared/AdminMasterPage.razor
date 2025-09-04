@@ -1,0 +1,15 @@
+@inherits LayoutComponentBase
+
+<div class="container-fluid">
+    <div class="row flex-nowrap">
+        <!-- Sidebar -->
+        <div class="col-auto px-0">
+            <MenuAdmin />
+        </div>
+
+        <!-- Main content -->
+        <div class="col ps-3 pe-3 pt-2">
+            @Body
+        </div>
+    </div>
+</div>

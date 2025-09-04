@@ -19,7 +19,11 @@ public class GiangVienService : IGiangVienService
 {
     private readonly IGiangVienRepository _repo;
     private readonly ISequenceService _seq;
-    public GiangVienService(IGiangVienRepository repo,ISequenceService seq) => _repo = repo;
+    public GiangVienService(IGiangVienRepository repo, ISequenceService seq)
+    {
+    _repo = repo;
+    _seq  = seq;
+    }
 
     public Task<List<GiangVien>> GetAllAsync() => _repo.GetAllAsync();
     public Task<GiangVien?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);

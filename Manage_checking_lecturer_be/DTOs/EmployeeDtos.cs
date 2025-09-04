@@ -11,6 +11,7 @@ public record EmployeeCreateDto(
     DateTime? internshipEndTime,
     IEnumerable<string>? skills,
     IEnumerable<string>? roles,
+    bool? isActive ,
     string? managerId
 );
 
@@ -29,7 +30,7 @@ public record EmployeeUpdateDto(
     bool? isActive
 );
 
-// (tuỳ chọn) ViewDto để ẩn password khi trả ra
+
 public record EmployeeViewDto(
     string id, string code, string email, string fullname,
     string? currentSchool, string? internshipPosition,
