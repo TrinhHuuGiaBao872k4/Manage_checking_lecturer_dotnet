@@ -1,5 +1,8 @@
-@* MenuManager.razor *@
-<div class="d-flex flex-column flex-shrink-0 p-1 text-white"
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<div class="d-flex flex-column flex-shrink-0 p-1 text-white "
     style="width: 350px; height: 100vh; background-color:#001529">
     <ul class="nav nav-pills flex-column mb-auto">
         <!-- Dashboard -->
@@ -12,13 +15,16 @@
 
         <!-- Manager (collapsible) -->
         <li class="mb-1">
-            <a class="nav-linkm d-flex align-items-center ms-2" data-bs-toggle="collapse" href="#managerSubMenu"
-                role="button" aria-expanded="false" aria-controls="managerSubMenu">
+            <a class="nav-linkm d-flex align-items-center ms-2 @(IsManagerChildActive() ? "manager-active" : "")"
+               data-bs-toggle="collapse" href="#managerSubMenu" role="button"
+               aria-expanded="@(IsManagerChildActive().ToString().ToLower())" aria-controls="managerSubMenu">
                 <i class="bi bi-envelope me-2"></i>
                 Manager
                 <i class="bi bi-chevron-down ms-auto arrow-icon"></i>
             </a>
-            <div class="collapse" id="managerSubMenu" style="background-color: #000;">
+
+            <div class="collapse @(IsManagerChildActive() ? "show" : "")" id="managerSubMenu"
+                style="background-color: #000;">
                 <ul class="nav flex-column pt-3 pb-3">
                     <li>
                         <NavLink href="/role" class="nav-linkm ps-5" activeClass="active">Role</NavLink>
@@ -100,4 +106,40 @@
     a[aria-expanded="true"] .arrow-icon {
         transform: rotate(180deg);
     }
+    .nav-linkm.manager-active {
+        color: #fff !important;
+        font-weight: 500;
+        background-color: transparent !important;
+    }
 </style>
+
+@code {
+    private readonly string[] managerLinks = new[]
+    {
+        "role", "employee", "project", "checking", "department", "meetings"
+    };
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool IsManagerChildActive()
+    {
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/').ToLowerInvariant();
+        if (string.IsNullOrEmpty(relative))
+            return false;
+        var firstSegment = relative.Split('/')[0];
+        return managerLinks.Contains(firstSegment);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

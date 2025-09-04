@@ -1,2 +1,72 @@
 @page "/role"
 @layout ManagerMasterPage
+
+<div class="container mt-4">
+    <!-- Title -->
+    <h3 class="fw-bold mb-3 fs-3">Quản lý role</h3>
+
+    <!-- Add button -->
+    <button class="btn btn-dark mb-3 fw-bold py-2 px-4">Add Role</button>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">STT</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>ADMIN</td>
+                    <td>
+                        <button class="btn btn-dark py-2 px-4">Delete</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>MANAGER</td>
+                    <td>
+                        <button class="btn btn-dark py-2 px-4">Delete</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>EMPLOYEE</td>
+                    <td>
+                        <button class="btn btn-dark py-2 px-4">Delete</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>GIANGVIEN</td>
+                    <td>
+                        <button class="btn btn-dark py-2 px-4">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-end">
+            <li class="page-item">
+                <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item active">
+                <a class="page-link" href="#">1</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
