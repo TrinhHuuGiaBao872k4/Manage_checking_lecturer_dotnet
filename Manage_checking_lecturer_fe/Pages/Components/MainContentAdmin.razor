@@ -1,0 +1,44 @@
+@inherits LayoutComponentBase
+<!-- Header trên cùng -->
+<div class="d-flex justify-content-between align-items-center mb-3 pb-2 pt-3 ps-5">
+    <div class="fs-6">
+        <span class="text-muted">Trang chủ / </span>
+        <span class="">@CurrentPage</span>
+    </div>
+    <div class="dropdown user-dropdown">
+        <a class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" href="#" id="userDropdown"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="images/avatar.jpg" alt="user" class="rounded-circle me-2"
+                style="width:35px; height:35px; object-fit:cover;" />
+            <strong>Intern update</strong>
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="userDropdown">
+            <li>
+                <a class="dropdown-item text-dark" href="#" @onclick="OnLogout">
+                    <i class="bi bi-box-arrow-right pe-2"></i>
+                    Đăng xuất
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<style>
+    .user-dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+    .dropdown-item.text-dark:active {
+        background-color: transparent !important;
+        color: #dc3545 !important;
+    }
+</style>
+@code {
+    [Parameter] public string CurrentPage { get; set; } = "All Schedule";
+
+    private void OnLogout()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+    [Inject] NavigationManager Navigation { get; set; }
+}

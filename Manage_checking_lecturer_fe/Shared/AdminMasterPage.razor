@@ -4,12 +4,22 @@
     <div class="row flex-nowrap">
         <!-- Sidebar -->
         <div class="col-auto px-0">
-            <MenuAdmin />
+            <MenuAdmin MenuSelected="OnMenuSelected" />
         </div>
 
         <!-- Main content -->
         <div class="col ps-3 pe-3 pt-2">
+            <MainContentAdmin CurrentPage="@currentPage" />
             @Body
         </div>
     </div>
 </div>
+@code {
+    private string currentPage = "All Schedule";
+
+    private void OnMenuSelected(string pageName)
+    {
+        currentPage = pageName;
+        StateHasChanged();
+    }
+}
