@@ -1,35 +1,40 @@
 using MongoDB.Driver;
 using MongoElearn.Infrastructure;
 using MongoElearn.Models;
-
+using MongoElearn.DTOs.Roles;
+using MongoElearn.Infrastructure.Repositories;
 namespace MongoElearn.Services;
-
-public class RoleService
+public interface IRoleService
 {
-    private readonly IMongoCollection<role> _col;
+    Task<List<Role>> GetAllAsync();
+    Task<Role?> GetByIdAsync(int id);
+    Task CreateAsync(RoleCreateDto dto);
+    Task<bool> UpdateAsync(int id, RoleUpdateDto dto);
+    Task<bool> DeleteAsync(int id);
+}
+public class RoleService : IRoleService
+{
+    private readonly IRoleRepository _repo;
+    public RoleService(IRoleRepository repo) => _repo = repo;
 
-    public RoleService(MongoDbContext ctx)
-        => _col = ctx.role;
+    public Task<List<Role>> GetAllAsync() => _repo.GetAllAsync();
+    public Task<Role?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);
 
-    public Task<List<role>> GetAllAsync()
-        => _col.Find(_ => true).ToListAsync();
-
-    public Task<role?> GetByIdAsync(int id)
-        => _col.Find(x => x.id == id).FirstOrDefaultAsync();
-
-    public Task CreateAsync(role doc)
-        => _col.InsertOneAsync(doc);
-
-    public async Task<bool> UpdateAsync(int id, role update)
+    public Task CreateAsync(RoleCreateDto dto)
     {
-        update.id = id;
-        var result = await _col.ReplaceOneAsync(x => x.id == id, update);
-        return result.MatchedCount > 0;
+        var doc = new Role { id = dto.id, name = dto.name };
+        return _repo.CreateAsync(doc);
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> UpdateAsync(int id, RoleUpdateDto dto)
     {
-        var result = await _col.DeleteOneAsync(x => x.id == id);
-        return result.DeletedCount > 0;
+        var e = await _repo.GetByIdAsync(id);
+        if (e is null) return false;
+
+        e.name = dto.name ?? e.name;
+        return await _repo.ReplaceAsync(Builders<Role>.Filter.Eq(x => x.id, id), e);
     }
+
+    public Task<bool> DeleteAsync(int id)
+        => _repo.DeleteAsync(Builders<Role>.Filter.Eq(x => x.id, id));
 }

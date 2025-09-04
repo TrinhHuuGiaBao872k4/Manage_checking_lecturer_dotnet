@@ -15,6 +15,6 @@ public class CollectionNames
     public string GiangVien_LopHoc { get; set; } = "GiangVien_LopHoc";
     public string LopHoc { get; set; } = "LopHoc";
     public string Project { get; set; } = "Project";
-    public string role { get; set; } = "role";
+    public string Role { get; set; } = "role";
     public string TimeEntryProject { get; set; } = "TimeEntryProject";
 }
