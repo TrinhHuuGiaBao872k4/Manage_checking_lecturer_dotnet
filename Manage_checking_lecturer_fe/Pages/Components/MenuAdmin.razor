@@ -6,29 +6,42 @@
 
     <ul class="nav nav-pills flex-column mb-4">
         <li class="nav-item">
-            <NavLink href="/schedule-management" class="nav-link" activeClass="active">
+            <NavLink href="/schedule-management" class="nav-link" activeClass="active"
+                     @onclick="@((e) => OnMenuClick("All Schedule"))">
                 <i class="fas fa-cog me-2"></i> Schedule Management
             </NavLink>
         </li>
         <li class="nav-item">
-            <NavLink href="/schedule-details-management" class="nav-link" activeClass="active">
+            <NavLink href="/schedule-details-management" class="nav-link" activeClass="active"
+                     @onclick="@((e) => OnMenuClick("Schedule Details Management"))">
                 <i class="fas fa-cog me-2"></i> Schedule Details Management
             </NavLink>
         </li>
         <li class="nav-item">
-            <NavLink href="/lecturers-management" class="nav-link" activeClass="active">
+            <NavLink href="/lecturers-management" class="nav-link" activeClass="active"
+                     @onclick="@((e) => OnMenuClick("Lecturers Management"))">
                 <i class="fas fa-cog me-2"></i> Lecturers Management
             </NavLink>
         </li>
         <li class="nav-item">
-            <NavLink href="/test-quiz" class="nav-link" activeClass="active">
+            <NavLink href="/test-quiz" class="nav-link" activeClass="active"
+                     @onclick="@((e) => OnMenuClick("Test Quiz"))">
                 <i class="fas fa-cog me-2"></i> Test Quiz
             </NavLink>
         </li>
         <li class="nav-item">
-            <NavLink href="/checking-intern" class="nav-link" activeClass="active">
+            <NavLink href="/checking-intern" class="nav-link" activeClass="active"
+                     @onclick="@((e) => OnMenuClick("Checking Intern"))">
                 <i class="fas fa-cog me-2"></i> Checking Intern
             </NavLink>
         </li>
     </ul>
 </div>
+@code {
+    [Parameter] public EventCallback<string> MenuSelected { get; set; }
+
+    private async Task OnMenuClick(string menuName)
+    {
+        await MenuSelected.InvokeAsync(menuName);
+    }
+}

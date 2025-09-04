@@ -1,0 +1,80 @@
+@page "/login"
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card shadow-sm p-4 rounded-3" style="width: 400px; background-color:#ECECEC;">
+        <h4 class="text-center mb-4 fw-bold">Login</h4>
+
+        <!-- Email -->
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input @bind="email" type="email" class="form-control form-control-lg rounded-3 fs-6" id="email" placeholder="Email" />
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3 position-relative">
+            <label for="password" class="form-label">Password</label>
+            <input @bind="password" type="@passwordInputType" class="form-control form-control-lg rounded-3 fs-6" id="password" placeholder="Password" />
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="invalid-feedback d-block mt-4">
+                    @errorMessage
+                </div>
+            }
+        </div>
+
+        <button class="btn btn-primary w-100 py-2 mt-2 rounded-3" @onclick="login">Sign In</button>
+    </div>
+</div>
+
+<style>
+    .btn-primary {
+        background-color: #7c3aed;
+        border-color: #7c3aed;
+    }
+
+    .btn-primary:hover {
+        background-color: #6d28d9;
+        border-color: #6d28d9;
+    }
+    .invalid-feedback {
+        background-color: #f8d7da;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+</style>
+
+@code {
+    [Inject] NavigationManager Navigation { get; set; }
+
+    private string email { get; set; } = string.Empty;
+    private string password { get; set; } = string.Empty;
+
+    private string? errorMessage;
+    private bool showPassword = false;
+    private string passwordInputType => showPassword ? "text" : "password";
+    
+
+    private void login()
+    {
+        errorMessage = null;
+
+        // Validation gom lại 1 chỗ
+        if (string.IsNullOrWhiteSpace(email))
+            errorMessage = "Vui lòng nhập email";
+        else if (!email.Contains("@"))
+            errorMessage = "Email không hợp lệ";
+        else if (string.IsNullOrWhiteSpace(password))
+            errorMessage = "Vui lòng nhập password";
+
+        // Nếu không có lỗi thì login
+        if (errorMessage == null)
+        {
+            Navigation.NavigateTo("/schedule-management");
+        }
+    }
+}
