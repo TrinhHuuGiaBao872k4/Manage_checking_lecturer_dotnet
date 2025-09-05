@@ -1,0 +1,42 @@
+<div class="d-flex flex-column gap-2 mb-3">
+    <!-- Employee dropdown -->
+    <InputSelect class="form-select"
+                 @bind-Value="SelectedEmployeeName"
+                 style="max-width:300px;">
+        <option value="">-- Select Employee --</option>
+        @foreach (var emp in Employees)
+        {
+            <option value="@emp.FullName">@emp.FullName (@emp.Department)</option>
+        }
+    </InputSelect>
+
+    <!-- Date picker -->
+    <InputDate class="form-control"
+               @bind-Value="SelectedDate"
+               style="max-width:200px;" />
+
+    <!-- Filter buttons -->
+    <div class="btn-group mt-2">
+        <button class="btn @(ShowActiveOnly ? "btn-outline-secondary" : "btn-primary")"
+                @onclick="() => OnFilterChanged.InvokeAsync(false)">
+            Show All Projects
+        </button>
+        <button class="btn @(ShowActiveOnly ? "btn-primary" : "btn-outline-secondary")"
+                @onclick="() => OnFilterChanged.InvokeAsync(true)">
+            Show Active Projects
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<EmployeeModel> Employees { get; set; } = new();
+
+    [Parameter] public string SelectedEmployeeName { get; set; } = "";
+    [Parameter] public EventCallback<string> SelectedEmployeeNameChanged { get; set; }
+
+    [Parameter] public DateTime SelectedDate { get; set; }
+    [Parameter] public EventCallback<DateTime> SelectedDateChanged { get; set; }
+
+    [Parameter] public bool ShowActiveOnly { get; set; }
+    [Parameter] public EventCallback<bool> OnFilterChanged { get; set; }
+}
