@@ -1,2 +1,255 @@
 @page "/employee"
 @layout ManagerMasterPage
+
+<div class="container-fluid mt-4">
+    <!-- Title -->
+    <h3 class="fw-bold mb-4 fs-3">Quản lý nhân viên</h3>
+
+    <!-- Action Buttons -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="btn btn-primary fw-bold px-4" @onclick="() => ShowAddModal = true">Add Employee</button>
+        @if (ShowAddModal)
+        {
+            <PopupAddEmployee OnSave="HandleSaveEmployee" OnCancel="() => ShowAddModal = false" />
+        }
+        @if (ShowEditModal && SelectedEmployee != null)
+        {
+            <PopupEditEmployee Employee="SelectedEmployee" OnSave="HandleUpdateEmployee"
+                OnCancel="() => ShowEditModal = false" />
+        }
+
+        <button class="btn btn-primary fw-bold px-4">Show Active Only</button>
+        <button class="btn btn-primary fw-bold px-4">Show All Employees</button>
+    </div>
+
+    <!-- Filters + Legend -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+
+        <!-- Left: Search + Dropdowns + Filter -->
+        <div class="d-flex align-items-center gap-2">
+            <input type="text" class="form-control" placeholder="Search by full name or school"
+                style="min-width:300px; height:38px;" />
+
+            <!-- Dropdown Phòng Ban -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary d-flex align-items-center fw-bold px-3" type="button"
+                    data-bs-toggle="dropdown" style="height:38px; min-width:150px;">
+                    Phòng Ban
+                    <i class="bi bi-chevron-down ms-2"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item fw-bold" href="#">All</a></li>
+                    <li><a class="dropdown-item" href="#">Phòng Nhân Sự</a></li>
+                    <li><a class="dropdown-item" href="#">Phòng Thiết Kế</a></li>
+                    <li><a class="dropdown-item" href="#">Phòng AI</a></li>
+                    <li><a class="dropdown-item" href="#">Phòng Developer</a></li>
+                </ul>
+            </div>
+
+            <!-- Dropdown Filter -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary d-flex align-items-center fw-bold px-3" type="button"
+                    data-bs-toggle="dropdown" style="height:38px; min-width:100px;">
+                    Filter
+                    <i class="bi bi-funnel ms-1"></i>
+                    <i class="bi bi-chevron-down ms-2"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item fw-bold" href="#">Show All</a></li>
+                    <li><a class="dropdown-item" href="#">Show Own</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Right: Legend trong khung -->
+        <div class="card p-2 ms-3" style="min-width:180px;">
+            <div class="d-flex align-items-center mb-1">
+                <span class="badge bg-primary me-2" style="width:20px; height:20px;">&nbsp;</span>
+                <span>Chuẩn bị bắt đầu</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-danger me-2" style="width:20px; height:20px;">&nbsp;</span>
+                <span>Sắp kết thúc</span>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="table-responsive" style="max-height:600px; overflow-y:auto;">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>STT</th>
+                    <th>Full Name</th>
+                    <th>Department</th>
+                    <th>Current School</th>
+                    <th>Class In CyberSoft</th>
+                    <th>Internship</th>
+                    <th>Skills</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody class="fs-6">
+                @foreach (var emp in PagedEmployees.Select((e, i) => new
+                {
+                    Index = (CurrentPage - 1) * PageSize + i + 1,
+                    Employee = e
+                }))
+                {
+                    <tr>
+                        <td>@emp.Index</td>
+                        <td>@emp.Employee.FullName</td>
+                        <td>@emp.Employee.Department</td>
+                        <td>@emp.Employee.CurrentSchool</td>
+                        <td>@emp.Employee.ClassInCyberSoft</td>
+                        <td>
+                            StartTime : @emp.Employee.StartDate.ToString("dd-MM-yyyy") <br />
+                            EndTime : @emp.Employee.EndDate.ToString("dd-MM-yyyy")
+                        </td>
+                        <td>@emp.Employee.Skills</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked="@emp.Employee.IsActive" />
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                <button class="btn btn-dark btn-sm"
+                                    @onclick="() => EditEmployee(emp.Employee)">Edit</button>
+                                <a href="/checking" class="btn btn-dark btn-sm">Time Sheet</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <!-- Pagination -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-end">
+                <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="" @onclick="() => ChangePage(CurrentPage - 1)" @onclick:preventDefault>
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                @for (int i = 1; i <= TotalPages; i++)
+                {
+                    <li class="page-item @(CurrentPage == i ? "active" : "")">
+                        <a class="page-link" href="" @onclick="() => ChangePage(i)" @onclick:preventDefault>@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="" @onclick="() => ChangePage(CurrentPage + 1)" @onclick:preventDefault>
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+@code {
+    private List<EmployeeModel> Employees = new()
+{
+new EmployeeModel("La Kỳ Phương", "Phòng Developer", "ĐH Bách Khoa TP.HCM", "Testing07", new DateTime(2025,7,15), new
+DateTime(2025,10,15), "C/C++, Java, Python, PHP", true),
+new EmployeeModel("Lê Vĩnh Sơn", "Phòng Developer", "Trường Quốc tế - ĐH QG", "Flutter02", new DateTime(2025,7,15), new
+DateTime(2025,10,15), "C#, Dart", true),
+new EmployeeModel("Ka Nghiêm", "Phòng Developer", "ĐH Greenwich VN", "BC67 NODE44", new DateTime(2025,7,15), new
+DateTime(2025,10,15), "HTML, CSS, JavaScript, ReactJS, NodeJS", true),
+new EmployeeModel("Nguyễn Đức Huy", "Phòng Developer", "ĐH Sài Gòn", "BC42", new DateTime(2025,6,16), new
+DateTime(2025,9,16), "Java, JavaScript, Typescript", true),
+new EmployeeModel("Teves Mario Tuấn Anh", "Phòng Developer", "Cybersoft", "Không có", new DateTime(2025,7,15), new
+DateTime(2025,10,15), "JavaScript", true),
+new EmployeeModel("Hồ Thanh Nhớ", "Phòng Nhân Sự", "UEH", "Chưa tham gia", new DateTime(2025,8,5), new
+DateTime(2025,11,5), "Java", true),
+new EmployeeModel("Nguyễn Khôi", "Phòng Developer", "ĐH Tôn Đức Thắng", "Testing 05", new DateTime(2025,7,15), new
+DateTime(2025,10,15), "Java", true),
+new EmployeeModel("Trưu Gia Bảo", "Phòng Developer", "ĐH Ngoại Ngữ - Tin học", "BC.Net01", new DateTime(2025,8,21), new
+DateTime(2025,11,21), "C#", true),
+new EmployeeModel("Đặng Chương", "Phòng Developer", "ĐH Ngoại Ngữ", "Bootcamp", new DateTime(2025,8,11), new
+DateTime(2025,11,11), "C#, JavaScript", true),
+new EmployeeModel("Trường Phát", "Phòng Developer", "ĐH Sài Gòn", "BC36, Node49", new DateTime(2025,6,18), new
+DateTime(2025,9,18), "JavaScript, Typescript", true),
+};
+
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 6;
+    private int TotalPages => (int)Math.Ceiling((double)Employees.Count / PageSize);
+    private bool ShowAddModal = false;
+    private bool ShowEditModal = false;
+    private PopupEditEmployee.EmployeeFormModel? SelectedEmployee;
+
+
+    private IEnumerable<EmployeeModel> PagedEmployees =>
+    Employees.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private void ChangePage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+        }
+    }
+    private void HandleSaveEmployee()
+    {
+        // TODO: Xử lý lưu nhân viên mới
+        ShowAddModal = false;
+    }
+
+    private void EditEmployee(EmployeeModel emp)
+    {
+        // map từ EmployeeModel (trang list) sang EmployeeFormModel (popup edit)
+        SelectedEmployee = new PopupEditEmployee.EmployeeFormModel
+        {
+            Code = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(), // nếu bạn có sẵn Code thì map vào đây
+            FullName = emp.FullName,
+            Department = emp.Department,
+            CurrentSchool = emp.CurrentSchool,
+            ClassInCyberSoft = emp.ClassInCyberSoft,
+            InternshipStart = emp.StartDate,
+            TimeInternship = ((emp.EndDate.Year - emp.StartDate.Year) * 12) + emp.EndDate.Month - emp.StartDate.Month,
+            Skills = emp.Skills,
+            Role = "", // gán thêm nếu bạn có dữ liệu
+            Manager = "" // gán thêm nếu bạn có dữ liệu
+        };
+
+        ShowEditModal = true;
+    }
+
+    private void HandleUpdateEmployee()
+    {
+        // TODO: lưu update SelectedEmployee về DB hoặc danh sách Employees
+        ShowEditModal = false;
+    }
+
+    public class EmployeeModel
+    {
+        public string FullName { get; set; }
+        public string Department { get; set; }
+        public string CurrentSchool { get; set; }
+        public string ClassInCyberSoft { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Skills { get; set; }
+        public bool IsActive { get; set; }
+
+        public EmployeeModel(string fullName, string department, string currentSchool, string classIn, DateTime start, DateTime
+        end, string skills, bool active)
+        {
+            FullName = fullName;
+            Department = department;
+            CurrentSchool = currentSchool;
+            ClassInCyberSoft = classIn;
+            StartDate = start;
+            EndDate = end;
+            Skills = skills;
+            IsActive = active;
+        }
+    }
+}

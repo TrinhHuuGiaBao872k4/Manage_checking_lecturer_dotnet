@@ -1,0 +1,55 @@
+<div class="modal fade @(IsOpen ? "show d-block" : "")" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold fs-6">Add Role</h5>
+                <button type="button" class="btn-close" @onclick="OnCancelClicked"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <input type="text" class="form-control" @bind="RoleName" />
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn btn-light border" @onclick="OnCancelClicked">Cancel</button>
+                <button class="btn btn-primary" @onclick="OnOkClicked">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public EventCallback<string> OnSave { get; set; }
+
+    private string? RoleName { get; set; }
+
+    private async Task OnOkClicked()
+    {
+        if (!string.IsNullOrWhiteSpace(RoleName))
+        {
+            await OnSave.InvokeAsync(RoleName);
+        }
+        await Close();
+    }
+
+    private async Task OnCancelClicked()
+    {
+        await Close();
+    }
+
+    private async Task Close()
+    {
+        RoleName = string.Empty;
+        IsOpen = false;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+    }
+}
