@@ -1,0 +1,146 @@
+@using System.ComponentModel.DataAnnotations
+
+<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-3 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Edit Project</h5>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="OnCancel"></button>
+            </div>
+
+            <div class="modal-body">
+                <EditForm Model="FormModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="row g-3">
+                        <!-- Code -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Code :</label>
+                            <InputText class="form-control" @bind-Value="FormModel.Code" disabled />
+                        </div>
+
+                        <!-- Name -->
+                        <div class="col-md-6">
+                            <label class="form-label text-danger">*</label>
+                            <label class="form-label fw-bold">Name :</label>
+                            <InputText class="form-control" @bind-Value="FormModel.Name" />
+                            <ValidationMessage For="@(() => FormModel.Name)" />
+                        </div>
+
+                        <!-- Type -->
+                        <div class="col-md-6">
+                            <label class="form-label text-danger">*</label>
+                            <label class="form-label fw-bold">Type :</label>
+                            <InputSelect class="form-select" @bind-Value="FormModel.Type">
+                                <option value="">-- Select type --</option>
+                                <option value="PROJECT">Project</option>
+                                <option value="LEAVE">Leave</option>
+                                <option value="OVERTIME">Overtime</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => FormModel.Type)" />
+                        </div>
+
+                        <!-- Limit -->
+                        <div class="col-md-6">
+                            <label class="form-label text-danger">*</label>
+                            <label class="form-label fw-bold">Limit :</label>
+                            <InputNumber class="form-control" @bind-Value="FormModel.Limit" />
+                            <ValidationMessage For="@(() => FormModel.Limit)" />
+                        </div>
+
+                        <!-- Start Date -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Start Date :</label>
+                            <InputDate class="form-control" @bind-Value="FormModel.StartDate" />
+                        </div>
+
+                        <!-- End Date -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">End Date :</label>
+                            <InputDate class="form-control" @bind-Value="FormModel.EndDate" />
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-6">
+                            <label class="form-label text-danger">*</label>
+                            <label class="form-label fw-bold">Status :</label>
+                            <InputSelect class="form-select" @bind-Value="FormModel.Status">
+                                <option value="">-- Select status --</option>
+                                <option value="NOT STARTED">Not Started</option>
+                                <option value="ONGOING">Ongoing</option>
+                                <option value="COMPLETED">Completed</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => FormModel.Status)" />
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Description :</label>
+                            <InputTextArea class="form-control" @bind-Value="FormModel.Description" Rows="3" />
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary px-4" @onclick="OnCancel">Cancel</button>
+                <button class="btn btn-primary px-4" @onclick="HandleValidSubmit">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<ProjectFormModel> OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public ProjectFormModel? EditModel { get; set; }
+
+    private ProjectFormModel FormModel = new();
+
+    protected override void OnParametersSet()
+    {
+        if (EditModel != null)
+        {
+            // Copy dữ liệu từ project truyền vào
+            FormModel = new ProjectFormModel
+            {
+                Code = EditModel.Code,
+                Name = EditModel.Name,
+                Type = EditModel.Type,
+                Status = EditModel.Status,
+                Limit = EditModel.Limit,
+                StartDate = EditModel.StartDate,
+                EndDate = EditModel.EndDate,
+                Description = EditModel.Description
+            };
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSave.InvokeAsync(FormModel);
+    }
+
+    public class ProjectFormModel
+    {
+        public string Code { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Type is required")]
+        public string Type { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Status is required")]
+        public string Status { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Limit is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "Limit must be >= 0")]
+        public int Limit { get; set; }
+
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string? Description { get; set; }
+    }
+}

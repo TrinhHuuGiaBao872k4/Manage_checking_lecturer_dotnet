@@ -1,2 +1,279 @@
 @page "/project"
 @layout ManagerMasterPage
+
+<div class="container-fluid mt-4">
+    <!-- Title -->
+    <h3 class="fw-bold mb-4 fs-3">Quản lý dự án</h3>
+
+    <!-- Add Button -->
+    <button class="btn btn-primary fw-bold px-4 mb-4" @onclick="() => ShowAddModal = true">Add Project</button>
+    @if (ShowAddModal)
+    {
+        <PopupAddProject OnSave="HandleSaveProject" OnCancel="() => ShowAddModal = false" />
+    }
+
+
+    <!-- Action Buttons + Search + Filter -->
+    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+        <!-- Search -->
+        <input type="text" class="form-control" placeholder="Search by name or code" style="max-width:350px;"
+            @bind="SearchText" @bind:event="oninput" />
+        <!-- Filter Dropdown -->
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary fw-bold px-3 d-flex align-items-center" type="button"
+                data-bs-toggle="dropdown">
+                Filter <i class="bi bi-funnel ms-1"></i> <i class="bi bi-chevron-down ms-2"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <button class="dropdown-item @(CurrentFilter == FilterType.All ? "fw-bold" : "")"
+                        @onclick="() => SetFilter(FilterType.All)">
+                        Show All
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item @(CurrentFilter == FilterType.ActiveOnly ? "fw-bold" : "")"
+                        @onclick="() => SetFilter(FilterType.ActiveOnly)">
+                        Show Active Only
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item @(CurrentFilter == FilterType.InactiveOnly ? "fw-bold" : "")"
+                        @onclick="() => SetFilter(FilterType.InactiveOnly)">
+                        Show Inactive Only
+                    </button>
+                </li>
+
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive" style="max-height:600px; overflow-y:auto;">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Limit</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody class="fs-6">
+                @foreach (var proj in FilteredProjects)
+                {
+                    <tr>
+                        <td>@proj.Code</td>
+                        <td>@proj.Name</td>
+                        <td>@proj.Status</td>
+                        <td>@proj.Type</td>
+                        <td>@proj.Limit</td>
+                        <td>@proj.StartDate.ToString("dd-MM-yyyy")</td>
+                        <td>@proj.EndDate.ToString("dd-MM-yyyy")</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked="@proj.IsActive"
+                                    @onchange="@((e) => ToggleActive(proj, e.Value?.ToString() == "on"))" />
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-dark px-3" @onclick="() => EditProject(proj)">Edit</button>
+                        </td>
+
+
+                    </tr>
+                }
+            </tbody>
+            @if (ShowEditModal)
+            {
+                <PopupEditProject EditModel="EditingProject" OnSave="HandleUpdateProject"
+                    OnCancel="() => ShowEditModal = false" />
+            }
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-end">
+            <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="" @onclick="() => ChangePage(CurrentPage - 1)" @onclick:preventDefault>
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            @for (int i = 1; i <= TotalPages; i++)
+            {
+                <li class="page-item @(CurrentPage == i ? "active" : "")">
+                    <a class="page-link" href="" @onclick="() => ChangePage(i)" @onclick:preventDefault>@i</a>
+                </li>
+            }
+
+            <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                <a class="page-link" href="" @onclick="() => ChangePage(CurrentPage + 1)" @onclick:preventDefault>
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+@code {
+    private List<ProjectModel> Projects = new()
+{
+new ProjectModel("P558206601","INTERN LEAVE","ONGOING","LEAVE",3,new DateTime(2024,9,10), new DateTime(2026,9,10),
+true),
+new ProjectModel("SICK_LEAVE","SICK LEAVE","ONGOING","LEAVE",24,new DateTime(2024,8,5), new DateTime(2030,12,31),
+false),
+new ProjectModel("P910930431","CYBERSOFT OT","ONGOING","OVERTIME",0,new DateTime(2024,9,11), new DateTime(2026,9,11),
+false),
+new ProjectModel("VACATION_LEAVE","HOLIDAY","ONGOING","LEAVE",12,new DateTime(2024,8,5), new DateTime(2030,12,31),
+true),
+new ProjectModel("P848110292","CYBERSOFT INTERN","ONGOING","PROJECT",0,new DateTime(2024,8,1), new DateTime(2025,1,1),
+true),
+new ProjectModel("P036206449","CYBERSOFT DEV REMOTE","ONGOING","PROJECT",10000,new DateTime(2024,9,1), new
+DateTime(2034,1,1), true),
+new ProjectModel("P294397303","CLASS","ONGOING","LEAVE",1000,new DateTime(2024,9,10), new DateTime(2042,12,4), true),
+};
+
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 6;
+    private int TotalPages => (int)Math.Ceiling((double)Projects.Count / PageSize);
+
+    private bool ShowAddModal = false;
+    private bool ShowActiveOnly = false;
+    private bool ShowEditModal = false;
+    private string SearchText = "";
+    private FilterType CurrentFilter { get; set; } = FilterType.All;
+
+    private PopupEditProject.ProjectFormModel? EditingProject;
+
+    private IEnumerable<ProjectModel> FilteredProjects =>
+    Projects
+    .Where(p =>
+    CurrentFilter == FilterType.All ||
+    (CurrentFilter == FilterType.ActiveOnly && p.IsActive) ||
+    (CurrentFilter == FilterType.InactiveOnly && !p.IsActive)
+    )
+    .Where(p => string.IsNullOrWhiteSpace(SearchText) ||
+    p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+    p.Code.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    .Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+
+    private void ChangePage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+        }
+    }
+
+    private void SetFilter(FilterType filter)
+    {
+        CurrentFilter = filter;
+        CurrentPage = 1;
+    }
+
+
+    private void ToggleActive(ProjectModel proj, bool isActive)
+    {
+        proj.IsActive = isActive;
+    }
+
+    private void EditProject(ProjectModel proj)
+    {
+        EditingProject = new PopupEditProject.ProjectFormModel
+        {
+            Code = proj.Code,
+            Name = proj.Name,
+            Type = proj.Type,
+            Status = proj.Status,
+            Limit = proj.Limit,
+            StartDate = proj.StartDate,
+            EndDate = proj.EndDate,
+            Description = proj.Description
+        };
+
+        ShowEditModal = true;
+    }
+
+    public enum FilterType
+    {
+        All,
+        ActiveOnly,
+        InactiveOnly
+    }
+
+    private async Task HandleUpdateProject(PopupEditProject.ProjectFormModel formModel)
+    {
+        var proj = Projects.FirstOrDefault(p => p.Code == formModel.Code);
+        if (proj != null)
+        {
+            proj.Name = formModel.Name;
+            proj.Type = formModel.Type;
+            proj.Status = formModel.Status;
+            proj.Limit = formModel.Limit;
+            proj.StartDate = formModel.StartDate ?? DateTime.MinValue;
+            proj.EndDate = formModel.EndDate ?? DateTime.MinValue;
+            proj.Description = formModel.Description;
+        }
+
+        ShowEditModal = false;
+    }
+
+    private async Task HandleSaveProject(PopupAddProject.ProjectFormModel formModel)
+    {
+        var newProj = new ProjectModel(
+        formModel.Code,
+        formModel.Name,
+        formModel.Status,
+        formModel.Type,
+        formModel.Limit,
+        formModel.StartDate ?? DateTime.MinValue,
+        formModel.EndDate ?? DateTime.MinValue,
+        true // mặc định active
+        );
+
+        Projects.Add(newProj);
+
+        // Đóng popup
+        ShowAddModal = false;
+
+        // Reset về trang cuối để xem dự án mới
+        CurrentPage = TotalPages;
+    }
+
+    public class ProjectModel
+    {
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public string Status { get; set; }
+        public string Type { get; set; }
+        public int Limit { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public bool IsActive { get; set; }
+        public string? Description { get; set; }
+
+        public ProjectModel(string code, string name, string status, string type, int limit, DateTime start, DateTime end, bool
+        active, string? description = null)
+        {
+            Code = code;
+            Name = name;
+            Status = status;
+            Type = type;
+            Limit = limit;
+            StartDate = start;
+            EndDate = end;
+            IsActive = active;
+            Description = description;
+        }
+    }
+
+}

@@ -1,0 +1,169 @@
+<div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Add Employee</h5>
+                <button type="button" class="btn-close" @onclick="Cancel"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <div class="col-6 p-2">
+                        <label class="form-label">Code</label>
+                        <input type="text" class="form-control" @bind="Employee.Code" disabled />
+                    </div>
+                    <div class="col-6 p-2">
+                        <label class="form-label text-danger">*</label>
+                        <label class="form-label">Full Name </label>
+                        <input type="text" class="form-control" @bind="Employee.FullName" />
+                    </div>
+
+                    <div class="col-6 p-2">
+                        <label class="form-label text-danger">*</label>
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" @bind="Employee.Email" />
+                    </div>
+                    <div class="col-6 p-2">
+                        <label class="form-label text-danger">*</label>
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" @bind="Employee.Password" />
+                    </div>
+
+                    <div class="col-6 p-2">
+                        <label class="form-label">Current School</label>
+                        <input type="text" class="form-control" @bind="Employee.CurrentSchool" />
+                    </div>
+                    <div class="col-6 p-2">
+                        <label class="form-label">Internship Position</label>
+                        <input type="text" class="form-control" @bind="Employee.InternshipPosition" />
+                    </div>
+
+                    <div class="col-6 p-2">
+                        <label class="form-label">Class In Cybersoft</label>
+                        <input type="text" class="form-control" @bind="Employee.ClassInCyberSoft" />
+                    </div>
+                    <div class="col-6 p-2"> 
+                        <label class="form-label">Internship Start</label> 
+                        <input type="date" class="form-control" @bind="Employee.InternshipStart" /> 
+                    </div>
+                    <div class="col-6 p-2">
+                        <label class="form-label">Time Internship</label>
+                        <input type="number" class="form-control" @bind="Employee.TimeInternship" disabled />
+                    </div>
+                    <div class="col-6 p-2">
+                        <label class="form-label">Internship End</label>
+                        <input type="date" class="form-control" value="@Employee.InternshipEnd.ToString("yyyy-MM-dd")"
+                            disabled />
+                    </div>
+
+
+                    <div class="col-6 p-2">
+                        <label class="form-label">Skills</label>
+                        <input type="text" class="form-control" @bind="Employee.Skills" />
+                    </div>
+                    <div class="col-6 p-2">
+                        <label class="form-label text-danger">*</label>
+                        <label class="form-label">Phòng Ban</label>
+                        <select class="form-select" @bind="Employee.Department">
+                            <option value="">-- Chọn phòng ban --</option>
+                            @foreach (var dept in Departments)
+                            {
+                                <option value="@dept">@dept</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-6 p-2">
+                        <label class="form-label text-danger">*</label>
+                        <label class="form-label">Role</label>
+                        <select class="form-select" @bind="Employee.Role">
+                            <option value="">-- Chọn role --</option>
+                            @foreach (var role in Roles)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-6 p-2">
+                        <label class="form-label text-danger">*</label>
+                        <label class="form-label">Manager</label>
+                        <select class="form-select" @bind="Employee.Manager">
+                            <option value="">-- Chọn manager --</option>
+                            @foreach (var manager in Managers)
+                            {
+                                <option value="@manager">@manager</option>
+                            }
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+                <button class="btn btn-primary" @onclick="Save">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private EmployeeFormModel Employee = new();
+
+    // Danh sách phòng ban
+    private List<string> Departments = new()
+{
+"Phòng Nhân Sự",
+"Phòng Thiết Kế",
+"Phòng AI",
+"Phòng Developer"
+};
+
+    // Danh sách role
+    private List<string> Roles = new()
+{
+"ADMIN",
+"MANAGER",
+"EMPLOYEE",
+"GIANGVIEN"
+};
+
+    // Danh sách manager (có thể sau này load từ DB)
+    private List<string> Managers = new()
+{
+"Trần Châu Thanh Nguyên",
+"Nguyễn Đình Sang",
+"Thu Hằng",
+"Dương Đình Phi",
+"Nguyễn Ngọc Hoàng Anh",
+"Ngọc Bích"
+};
+    private void Save()
+    {
+        OnSave.InvokeAsync();
+    }
+
+    private void Cancel()
+    {
+        OnCancel.InvokeAsync();
+    }
+    public class EmployeeFormModel
+    {
+        public string Code { get; set; } = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string CurrentSchool { get; set; }
+        public string InternshipPosition { get; set; }
+        public string ClassInCyberSoft { get; set; }
+        public DateTime InternshipStart { get; set; } = DateTime.Today;
+        // InternshipEnd auto tính dựa vào Start + TimeInternship
+        public DateTime InternshipEnd => InternshipStart.AddMonths(TimeInternship);
+        public int TimeInternship { get; set; } = 3;
+        public string Skills { get; set; }
+        public string Department { get; set; }
+        public string Role { get; set; }
+        public string Manager { get; set; }
+    }
+}
