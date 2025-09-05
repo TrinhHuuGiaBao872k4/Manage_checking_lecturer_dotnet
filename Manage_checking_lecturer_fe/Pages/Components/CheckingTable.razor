@@ -1,0 +1,74 @@
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Project</th>
+            @foreach (var day in WeekDays)
+            {
+                <th>@day.ToString("ddd, dd-MM-yyyy")</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var proj in Projects)
+        {
+            <tr>
+                <td>
+                    <div>
+                        <b>@proj.Name</b> <br />
+                        <small class="text-muted">@proj.Type - @proj.Status</small>
+                    </div>
+                </td>
+                @foreach (var day in WeekDays)
+                {
+                    <td>
+                        <select class="form-select"
+                                @bind="TimesheetData[(proj.Code, day)]">
+                            <option value="0">0</option>
+                            <option value="4">4 - Sáng</option>
+                            <option value="8">8 - Cả ngày</option>
+                        </select>
+                    </td>
+                }
+            </tr>
+        }
+        <!-- Row Total -->
+        <tr class="fw-bold">
+            <td>Total</td>
+            @foreach (var day in WeekDays)
+            {
+                <td>@TimesheetData.Where(x => x.Key.Item2 == day).Sum(x => x.Value)</td>
+            }
+        </tr>
+    </tbody>
+</table>
+
+<button class="btn btn-primary mt-3" @onclick="Save">Save</button>
+
+@code {
+    [Parameter] public List<ProjectModel> Projects { get; set; } = new();
+    [Parameter] public List<DateTime> WeekDays { get; set; } = new();
+
+    private Dictionary<(string, DateTime), int> TimesheetData = new();
+
+    protected override void OnParametersSet()
+    {
+        TimesheetData.Clear();
+        foreach (var proj in Projects)
+        {
+            foreach (var day in WeekDays)
+            {
+                TimesheetData[(proj.Code, day)] = 0;
+            }
+        }
+    }
+
+    private void Save()
+    {
+        // TODO: lưu vào DB
+        Console.WriteLine("Saved timesheet");
+        foreach (var kvp in TimesheetData)
+        {
+            Console.WriteLine($"{kvp.Key.Item1} - {kvp.Key.Item2:dd/MM/yyyy} : {kvp.Value}");
+        }
+    }
+}
