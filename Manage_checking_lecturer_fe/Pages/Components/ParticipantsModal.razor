@@ -1,0 +1,79 @@
+
+
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Danh sách người tham gia</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (participants.Count == 0)
+                {
+                    <p>No participants</p>
+                }
+                else
+                {
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width: 300px">Họ và tên</th>
+                                <th style="width: 200px">Trạng thái</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in participants)
+                            {
+                                <tr>
+                                    <td>@p.Fullname</td>
+                                    <td>
+                                        @if (p.Status == "ATTENDING")
+                                        {
+                                            <span class="text-success">✅</span>
+                                        }
+                                        else if (p.Status == "ABSENT")
+                                        {
+                                            <span class="text-danger">❌</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa phản hồi</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(p.Reason))
+                                        {
+                                            <small class="text-muted">Lý do: @p.Reason</small>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="Close">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int MeetingId { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private List<ParticipantDto> participants = new()
+    {
+        new ParticipantDto { Fullname = "Nguyễn Văn A", Status = "ATTENDING" },
+        new ParticipantDto { Fullname = "Trần Thị B", Status = "ABSENT", Reason = "Bận việc" },
+        new ParticipantDto { Fullname = "Lê Văn C", Status = "PENDING" }
+    };
+
+    private async Task Close()
+    {
+        if (OnClose.HasDelegate)
+            await OnClose.InvokeAsync();
+    }
+}

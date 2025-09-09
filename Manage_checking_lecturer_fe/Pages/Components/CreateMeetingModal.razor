@@ -1,0 +1,70 @@
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    @(Meeting == null ? "Add Meeting" : "Edit Meeting")
+                </h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="formModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <InputText class="form-control" @bind-Value="formModel.Title" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Datetime</label>
+                        <InputDate class="form-control" @bind-Value="formModel.Datetime" />
+                    </div>
+                </EditForm>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="Close">Cancel</button>
+                <button class="btn btn-primary" @onclick="Submit">
+                    @(Meeting == null ? "Create" : "Update")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // <-- SỬ DỤNG model CHUNG (MeetingDto) từ thư mục Models
+    [Parameter] public MeetingDto? Meeting { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private CreateMeetingDto formModel = new CreateMeetingDto();
+
+    protected override void OnParametersSet()
+    {
+        if (Meeting != null)
+        {
+            formModel.Title = Meeting.Title;
+            formModel.Datetime = Meeting.Datetime;
+        }
+        else
+        {
+            formModel = new CreateMeetingDto { Datetime = DateTime.Now };
+        }
+    }
+
+    private async Task HandleValidSubmit() => await Submit();
+
+    private async Task Submit()
+    {
+        // UI-only modal: báo OnSaved và đóng modal
+        if (OnSaved.HasDelegate) await OnSaved.InvokeAsync();
+        if (OnClose.HasDelegate) await OnClose.InvokeAsync();
+    }
+
+    private async Task Close()
+    {
+        if (OnClose.HasDelegate) await OnClose.InvokeAsync();
+    }
+}

@@ -1,8 +1,7 @@
 <div class="d-flex flex-column gap-2 mb-3">
-    <!-- Employee dropdown -->
-    <InputSelect class="form-select"
-                 @bind-Value="SelectedEmployeeName"
-                 style="max-width:300px;">
+    <!-- checkingfilter.razor -->
+    <InputSelect class="form-select" Value="SelectedEmployeeName" ValueChanged="SelectedEmployeeNameChanged"
+        ValueExpression="@(() => SelectedEmployeeName)" style="max-width:300px;">
         <option value="">-- Select Employee --</option>
         @foreach (var emp in Employees)
         {
@@ -10,19 +9,18 @@
         }
     </InputSelect>
 
-    <!-- Date picker -->
-    <InputDate class="form-control"
-               @bind-Value="SelectedDate"
-               style="max-width:200px;" />
+    <InputDate class="form-control" Value="SelectedDate" ValueChanged="SelectedDateChanged"
+        ValueExpression="@(() => SelectedDate)" style="max-width:200px;" />
+
 
     <!-- Filter buttons -->
-    <div class="btn-group mt-2">
-        <button class="btn @(ShowActiveOnly ? "btn-outline-secondary" : "btn-primary")"
-                @onclick="() => OnFilterChanged.InvokeAsync(false)">
+    <div class="mt-2">
+        <button class="btn @(ShowActiveOnly ? "btn-outline-secondary" : "btn-primary") me-2" style="width: 200px;"
+            @onclick="() => OnFilterChanged.InvokeAsync(false)">
             Show All Projects
         </button>
-        <button class="btn @(ShowActiveOnly ? "btn-primary" : "btn-outline-secondary")"
-                @onclick="() => OnFilterChanged.InvokeAsync(true)">
+        <button class="btn @(ShowActiveOnly ? "btn-primary" : "btn-outline-secondary")" style="width: 200px;"
+            @onclick="() => OnFilterChanged.InvokeAsync(true)">
             Show Active Projects
         </button>
     </div>
