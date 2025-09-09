@@ -1,2 +1,140 @@
 @page "/department"
 @layout ManagerMasterPage
+
+<div class="container-fluid mt-4">
+    <h3 class="fw-bold mb-4 fs-3">Quản lý phòng ban</h3>
+
+    <button class="btn btn-primary fw-bold px-4 mb-4" @onclick="() => ShowAddModal = true">Add Department</button>
+    @if (ShowAddModal)
+    {
+        <PopupAddDepartment OnSave="HandleSaveDepartment" OnCancel="() => ShowAddModal = false" />
+    }
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>STT</th>
+                    <th>Department</th>
+                    <th>Description</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dept in PagedDepartments.Select((value, index) => new { value, index }))
+                {
+                    <tr>
+                        <td>@((CurrentPage - 1) * PageSize + dept.index + 1)</td>
+                        <td>@dept.value.Name</td>
+                        <td>@dept.value.Description</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked="@dept.value.IsActive"
+                                       @onchange="@((e) => ToggleActive(dept.value, e.Value?.ToString() == "on"))" />
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-dark px-3" @onclick="() => EditDepartment(dept.value)">Edit</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (ShowEditModal)
+    {
+        <PopupEditDepartment EditModel="EditingDepartment" OnSave="HandleUpdateDepartment" OnCancel="() => ShowEditModal = false" />
+    }
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-end">
+            <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="" @onclick="() => ChangePage(CurrentPage - 1)" @onclick:preventDefault>&laquo;</a>
+            </li>
+
+            @for (int i = 1; i <= TotalPages; i++)
+            {
+                <li class="page-item @(CurrentPage == i ? "active" : "")">
+                    <a class="page-link" href="" @onclick="() => ChangePage(i)" @onclick:preventDefault>@i</a>
+                </li>
+            }
+
+            <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                <a class="page-link" href="" @onclick="() => ChangePage(CurrentPage + 1)" @onclick:preventDefault>&raquo;</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+@code {
+    private List<DepartmentModel> Departments = new()
+    {
+        new DepartmentModel("Phòng Nhân Sự", "Phụ trách nhân sự trong công ty", true),
+        new DepartmentModel("Phòng Thiết Kế", "Thiết kế sản phẩm và UI/UX", false),
+        new DepartmentModel("Phòng AI", "Nghiên cứu trí tuệ nhân tạo", true),
+        new DepartmentModel("Phòng Developer", "Lập trình và phát triển sản phẩm", true)
+    };
+
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 5;
+    private int TotalPages => (int)Math.Ceiling((double)Departments.Count / PageSize);
+    private IEnumerable<DepartmentModel> PagedDepartments =>
+        Departments.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private bool ShowAddModal = false;
+    private bool ShowEditModal = false;
+    private DepartmentFormModel? EditingDepartment;
+
+    private void ChangePage(int page)
+    {
+        if (page >= 1 && page <= TotalPages) CurrentPage = page;
+    }
+
+    private void ToggleActive(DepartmentModel dept, bool isActive) => dept.IsActive = isActive;
+
+    private void EditDepartment(DepartmentModel dept)
+    {
+        // map sang DepartmentFormModel (dùng chung)
+        EditingDepartment = new DepartmentFormModel
+        {
+            Name = dept.Name,
+            Description = dept.Description,
+            IsActive = dept.IsActive
+        };
+        ShowEditModal = true;
+    }
+
+    private async Task HandleUpdateDepartment(DepartmentFormModel formModel)
+    {
+        var dept = Departments.FirstOrDefault(d => d.Name == formModel.Name);
+        if (dept != null)
+        {
+            dept.Name = formModel.Name;
+            dept.Description = formModel.Description;
+            dept.IsActive = formModel.IsActive;
+        }
+        ShowEditModal = false;
+    }
+
+    private async Task HandleSaveDepartment(DepartmentFormModel formModel)
+    {
+        var newDept = new DepartmentModel(formModel.Name, formModel.Description, formModel.IsActive);
+        Departments.Add(newDept);
+        ShowAddModal = false;
+        CurrentPage = TotalPages;
+    }
+
+    public class DepartmentModel
+    {
+        public DepartmentModel(string name, string description, bool isActive)
+        {
+            Name = name; Description = description; IsActive = isActive;
+        }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public bool IsActive { get; set; }
+    }
+}

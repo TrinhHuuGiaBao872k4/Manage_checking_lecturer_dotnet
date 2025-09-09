@@ -21,12 +21,31 @@
                 @foreach (var day in WeekDays)
                 {
                     <td>
-                        <select class="form-select"
-                                @bind="TimesheetData[(proj.Code, day)]">
-                            <option value="0">0</option>
-                            <option value="4">4 - Sáng</option>
-                            <option value="8">8 - Cả ngày</option>
-                        </select>
+                        @if (day.DayOfWeek == DayOfWeek.Saturday)
+                        {
+                            <!-- Thứ 7: chỉ cho phép 0 hoặc 4-Sáng -->
+                            <select class="form-select" @bind="TimesheetData[(proj.Code, day)]">
+                                <option value="0">0</option>
+                                <option value="4">4 - Sáng</option>
+                            </select>
+                        }
+                        else if (day.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            <!-- Chủ nhật: mặc định 0, disable -->
+                            <select class="form-select" disabled>
+                                <option selected value="0">0</option>
+                            </select>
+                        }
+                        else
+                        {
+                            <!-- Ngày thường -->
+                            <select class="form-select" @bind="TimesheetData[(proj.Code, day)]">
+                                <option value="0">0</option>
+                                <option value="4">4 - Sáng</option>
+                                <option value="4">4 - Chiều</option>
+                                <option value="8">8 - Cả ngày</option>
+                            </select>
+                        }
                     </td>
                 }
             </tr>
@@ -57,7 +76,16 @@
         {
             foreach (var day in WeekDays)
             {
-                TimesheetData[(proj.Code, day)] = 0;
+                if (day.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    // Chủ nhật luôn 0 (disable dropdown)
+                    TimesheetData[(proj.Code, day)] = 0;
+                }
+                else
+                {
+                    // Thứ 7 và ngày thường mặc định 0
+                    TimesheetData[(proj.Code, day)] = 0;
+                }
             }
         }
     }

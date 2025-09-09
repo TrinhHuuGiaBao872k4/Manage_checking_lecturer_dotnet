@@ -10,7 +10,7 @@
 
 
     <!-- Table component -->
-    @if (!string.IsNullOrEmpty(SelectedEmployeeName) && SelectedDate != default)
+    @if (!string.IsNullOrEmpty(SelectedEmployeeName))
     {
         <CheckingTable Projects="FilteredProjects" WeekDays="WeekDays" />
     }

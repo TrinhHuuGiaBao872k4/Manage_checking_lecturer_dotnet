@@ -1,2 +1,136 @@
 @page "/meetings"
 @layout ManagerMasterPage
+
+<div class="container-fluid mt-4">
+    <h3 class="fw-bold mb-4 fs-3">Manage Meetings</h3>
+
+    <div class="mb-3">
+        <button class="btn btn-primary fw-bold px-4 mb-4" @onclick="ShowCreateModal">
+            + Add Meeting
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else if (Meetings.Count == 0)
+    {
+        <p>No meetings</p>
+    }
+    else
+    {
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:300px">Meeting Schedule</th>
+                    <th style="width:150px">Details</th>
+                    <th style="width:160px">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var meeting in Meetings)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-bold">
+                                @meeting.Datetime.ToString("dd-MM-yyyy HH:mm") — @meeting.Title
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-success btn-sm me-2" @onclick="() => ShowParticipants(meeting.Id)">
+                                View
+                            </button>
+                            <button class="btn btn-info btn-sm text-white" @onclick="() => CopyLink(meeting.Id)">
+                                Lấy Link
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary btn-sm me-2" @onclick="() => EditMeeting(meeting)">
+                                Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteMeeting(meeting.Id)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <!-- Modal Create/Edit -->
+    @if (showCreateModal)
+    {
+        <CreateMeetingModal Meeting="editingMeeting" OnClose="CloseCreateModal" OnSaved="ReloadMeetings" />
+    }
+
+    <!-- Modal Participants -->
+    @if (showParticipantsModal)
+    {
+        <ParticipantsModal MeetingId="selectedMeetingId" OnClose="CloseParticipantsModal" />
+    }
+</div>
+@code {
+    private List<MeetingDto> Meetings = new()
+{
+new MeetingDto { Id = 1, Title = "Weekly Standup", Datetime = DateTime.Now.AddDays(1).Date.AddHours(9) },
+new MeetingDto { Id = 2, Title = "Project Review", Datetime = DateTime.Now.AddDays(2).Date.AddHours(14).AddMinutes(30) }
+};
+
+    private bool isLoading = false;
+
+    private bool showCreateModal = false;
+    private MeetingDto? editingMeeting;
+
+    private bool showParticipantsModal = false;
+    private int selectedMeetingId;
+
+    private void ShowCreateModal()
+    {
+        editingMeeting = null;
+        showCreateModal = true;
+    }
+
+    private void EditMeeting(MeetingDto m)
+    {
+        // clone nếu muốn tránh sửa trực tiếp source list
+        editingMeeting = new MeetingDto { Id = m.Id, Title = m.Title, Datetime = m.Datetime };
+        showCreateModal = true;
+    }
+
+    private void CloseCreateModal()
+    {
+        showCreateModal = false;
+        editingMeeting = null;
+    }
+
+    private void ReloadMeetings()
+    {
+        showCreateModal = false;
+        // nếu bạn muốn reload từ backend thì gọi lại service ở đây
+    }
+
+    private void ShowParticipants(int meetingId)
+    {
+        selectedMeetingId = meetingId;
+        showParticipantsModal = true;
+    }
+
+    private void CloseParticipantsModal()
+    {
+        showParticipantsModal = false;
+    }
+
+    private void DeleteMeeting(int meetingId)
+    {
+        Meetings.RemoveAll(m => m.Id == meetingId);
+    }
+
+    private void CopyLink(int meetingId)
+    {
+        var link = $"https://example.com/employee/meetings/attend?meetingId={meetingId}";
+        Console.WriteLine($"Link: {link}");
+        // nếu muốn copy thực sự thì dùng IJSRuntime navigator.clipboard
+    }
+}
